@@ -2,3 +2,12 @@
   color: blue;
   text-align: center;
 }
+
+#graph {
+  text-align: center;
+  background-color : gray;
+}
+
+svg {
+  background-color : pink;
+}
