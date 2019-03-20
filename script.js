@@ -19,22 +19,18 @@ d3.json('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/mas
   console.log(json[0]['Time']); // "36:50"
   */
   
+  console.log(json[16]);
+  
   const h = 500;
   const w = 800;
   const padding = 50;
-  
-  const recordFormat = "%M:%S";  
-  const parsedRecords = json.map((n) => {
-    return d3.timeParse(recordFormat)(n['Time'])
-  });
-
-  
+   
   const xScale = d3.scaleLinear()
         .domain([d3.min(json, (d)=>d['Year']) -1, d3.max(json, (d)=>d['Year'])+1])
-        .range([padding, w - 10]);
+        .range([padding, w - 15]);
   const yScale = d3.scaleTime()
         .domain([d3.max(json, (d) => d["Seconds"]), d3.min(json, (d) => d["Seconds"])])
-        .range([h - padding, 10]);
+        .range([h - padding, 15]);
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale).tickFormat((d) => {
     let min = Math.floor(d / 60);
@@ -43,11 +39,13 @@ d3.json('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/mas
   });
   
   const svg = d3.select('#graph').append('svg')
-        .attr('height', h).attr('width', w).style('background-color', 'pink');
+        .attr('height', h).attr('width', w);
   const dot = svg.selectAll('circle').data(json).enter().append('circle')
         .attr('cx',(d,i) => xScale(d['Year']))
         .attr('cy', (d,i) => yScale(d['Seconds']))
         .attr('r', '5px').attr('class', 'dot');
+  dot.attr('fill', (d,i) => d["Doping"]==""? "orange" : "blue").attr('fill-opacity', '.5').attr('stroke', 'black')
+  dot.append('title').html((d) => d['Name'] +" : "+ d['Nationality'] + "<br/>" + "Year : "+ d['Year'] + ", Time : " + d.Time + (d.Doping? "<br/><br/>" + d.Doping : "")).attr('id', 'legend');
   
   svg.append('g')
       .attr("transform", "translate(0," +(h - padding)+ ")")
