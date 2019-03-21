@@ -19,32 +19,31 @@ d3.json('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/mas
   console.log(json[0]['Time']); // "36:50"
   */
   
-  console.log(json[16]);
-  
   const h = 500;
   const w = 800;
   const padding = 50;
-   
+  
+  const record = json.forEach((d) => {
+    d.Time = new Date(1995, 1, 1, 0, d.Time.slice(0,2), d.Time.slice(3));
+  });
+  const recFormat = d3.timeFormat("%M:%S")
+  
   const xScale = d3.scaleLinear()
-        .domain([d3.min(json, (d)=>d['Year']) -1, d3.max(json, (d)=>d['Year'])+1])
+        .domain([d3.min(json, (d)=>d.Year) -1, d3.max(json, (d)=>d.Year)+1])
         .range([padding, w - 15]);
   const yScale = d3.scaleTime()
-        .domain([d3.max(json, (d) => d["Seconds"]), d3.min(json, (d) => d["Seconds"])])
+        .domain([d3.max(json, (d) => d.Time), d3.min(json, (d) => d.Time)])
         .range([h - padding, 15]);
-  const xAxis = d3.axisBottom(xScale);
-  const yAxis = d3.axisLeft(yScale).tickFormat((d) => {
-    let min = Math.floor(d / 60);
-    let sec = d%60;
-    return sec == 60 ? (min+1) + ":00" : min + ":"+ (sec<10 ? "0"+ sec : sec);
-  });
+  const xAxis = d3.axisBottom(xScale).tickFormat(d3.format(""));
+  const yAxis = d3.axisLeft(yScale).tickFormat(recFormat);
   
   const div = d3.select('body').append('div').attr('id','tooltip').style('opacity',0);
   
   const svg = d3.select('#graph').append('svg')
         .attr('height', h).attr('width', w);
   const dot = svg.selectAll('circle').data(json).enter().append('circle')
-        .attr('cx',(d,i) => xScale(d['Year']))
-        .attr('cy', (d,i) => yScale(d['Seconds']))
+        .attr('cx',(d,i) => xScale(d.Year))
+        .attr('cy', (d,i) => yScale(d.Time))
         .attr('r', '5px').attr('class', 'dot')
         .attr('data-xvalue', (d) => d.Year).attr('data-yvalue', (d) => d.Time);
   dot.attr('fill', (d,i) => d["Doping"]==""? "orange" : "blue").attr('fill-opacity', '.5').attr('stroke', 'black');
@@ -53,6 +52,7 @@ d3.json('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/mas
     div.html(d['Name'] +" : "+ d['Nationality'] + "<br/>" + "Year : "+ d['Year'] + ", Time : " + d.Time + (d.Doping ? "<br/><br/>" + d.Doping : ""))
         .style('left', (d3.event.pageX + 15) + "px")
         .style('top', (d3.event.pageY - 28) + "px")
+    div.attr('data-year', d.Year)
   })
   .on('mouseout', (d) =>{
     div.transition().duration(500).style('opacity',0)
