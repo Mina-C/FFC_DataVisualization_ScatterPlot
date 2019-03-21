@@ -38,14 +38,25 @@ d3.json('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/mas
     return sec == 60 ? (min+1) + ":00" : min + ":"+ (sec<10 ? "0"+ sec : sec);
   });
   
+  const div = d3.select('body').append('div').attr('id','tooltip').style('opacity',0);
+  
   const svg = d3.select('#graph').append('svg')
         .attr('height', h).attr('width', w);
   const dot = svg.selectAll('circle').data(json).enter().append('circle')
         .attr('cx',(d,i) => xScale(d['Year']))
         .attr('cy', (d,i) => yScale(d['Seconds']))
-        .attr('r', '5px').attr('class', 'dot');
-  dot.attr('fill', (d,i) => d["Doping"]==""? "orange" : "blue").attr('fill-opacity', '.5').attr('stroke', 'black')
-  dot.append('title').html((d) => d['Name'] +" : "+ d['Nationality'] + "<br/>" + "Year : "+ d['Year'] + ", Time : " + d.Time + (d.Doping? "<br/><br/>" + d.Doping : "")).attr('id', 'legend');
+        .attr('r', '5px').attr('class', 'dot')
+        .attr('data-xvalue', (d) => d.Year).attr('data-yvalue', (d) => d.Time);
+  dot.attr('fill', (d,i) => d["Doping"]==""? "orange" : "blue").attr('fill-opacity', '.5').attr('stroke', 'black');
+  dot.on('mouseover',(d) =>{
+    div.transition().duration(200).style('opacity', .9);
+    div.html(d['Name'] +" : "+ d['Nationality'] + "<br/>" + "Year : "+ d['Year'] + ", Time : " + d.Time + (d.Doping ? "<br/><br/>" + d.Doping : ""))
+        .style('left', (d3.event.pageX + 15) + "px")
+        .style('top', (d3.event.pageY - 28) + "px")
+  })
+  .on('mouseout', (d) =>{
+    div.transition().duration(500).style('opacity',0)
+  });
   
   svg.append('g')
       .attr("transform", "translate(0," +(h - padding)+ ")")
